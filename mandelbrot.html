@@ -7,6 +7,12 @@ const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 const img = ctx.createImageData(800, 600);
 let data = img.data;
+
+const PALETTE_SIZE = 6;
+const red = [66, 25, 9, 0, 255, 255];
+const green = [30, 7, 1, 0, 255, 140];
+const blue = [15, 26, 47, 100, 255, 0];
+
 let i = 0;
 for (let y = 0; y < 600; y++) {
   for (let x = 0; x < 800; x++) {
@@ -20,13 +26,32 @@ for (let y = 0; y < 600; y++) {
       zx = tmp;
       iter--;
     }
-    let color = iter | (iter << 8);
-    data[i++] = (color >> 16) & 255;
-    data[i++] = (color >> 8) & 255;
-    data[i++] = color & 255;
+
+    let r, g, b;
+    if (iter === 0) {
+      // Inside the set → black
+      r = 0; g = 0; b = 0;
+    } else {
+      // iterationsUsed goes 0..MAX_ITER
+      let iterationsUsed = 300 - iter;
+
+      // Option 1 (banded): let index = iterationsUsed % PALETTE_SIZE;
+      // Option 2 (smooth palette mapping):
+      let index = Math.floor((iterationsUsed / 300) * (PALETTE_SIZE - 1));
+      index = Math.max(0, Math.min(PALETTE_SIZE - 1, index));
+
+      r = red[index];
+      g = green[index];
+      b = blue[index];
+    }
+
+    data[i++] = r;
+    data[i++] = g;
+    data[i++] = b;
     data[i++] = 255;
   }
 }
+
 ctx.putImageData(img, 0, 0);
 </script>
 </body>
